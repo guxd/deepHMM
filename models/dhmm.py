@@ -83,8 +83,9 @@ class DHMM(nn.Module):
             z_t, z_mu, z_logvar = self.postnet(z_prev, rnn_out[:,t,:]) #q(z_t | z_{t-1}, x_{t:T})
             kl = self.kl_div(z_mu, z_logvar, z_prior_mu, z_prior_logvar)
             kl_states[:,t] = self.kl_div(z_mu, z_logvar, z_prior_mu, z_prior_logvar)
-            logit_x_t = self.emitter(z_t).contiguous() # p(x_t|z_t)
-            rec_losses[:,t] = nn.BCEWithLogitsLoss()(logit_x_t.view(-1), x[:,t,:].contiguous().view(-1))
+            logit_x_t = self.emitter(z_t).contiguous() # p(x_t|z_t)         
+            rec_loss = nn.BCEWithLogitsLoss(reduction='none')(logit_x_t.view(-1), x[:,t,:].contiguous().view(-1)).view(batch_size, -1)
+            rec_losses[:,t] = rec_loss.mean(dim=1)                  
             z_prev = z_t   
         x_mask = sequence_mask(x_lens)
         x_mask = x_mask.gt(0).view(-1)
