@@ -42,7 +42,8 @@ class DHMM(nn.Module):
             nn.ReLU(),
             nn.Linear(self.emission_dim, self.emission_dim),
             nn.ReLU(),
-            nn.Linear(self.emission_dim, self.input_dim)
+            nn.Linear(self.emission_dim, self.input_dim),
+            nn.Sigmoid()
         )
         self.trans = GatedTransition(self.z_dim, self.trans_dim)
         self.postnet = PostNet(self.z_dim, self.rnn_dim)
